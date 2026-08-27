@@ -181,6 +181,19 @@ def test_scan_multi_page(client, fake_gemini, term_form):
     assert {t["title"] for t in body["tasks"]} == {"Midterm", "Final"}
 
 
+def test_scan_reports_an_empty_vision_extraction(client, fake_gemini, term_form):
+    fake_gemini(returns=RawExtraction(
+        course=RawCourse(code="CMP 405/743", name="Intro to Networks"), tasks=[]
+    ))
+    data = {"images": (io.BytesIO(_frames(1)[0]), "page1.jpg", "image/jpeg")}
+    data.update(term_form)
+
+    response = client.post("/api/syllabus/scan", data=data,
+                           content_type="multipart/form-data")
+    assert response.status_code == 422
+    assert response.get_json()["reason"] == "no_tasks_found"
+
+
 def test_scan_rejects_blurry_frames_before_calling_the_model(client, term_form):
     """A too-blurry photo must fail with a retake prompt, not a wasted API call."""
     data = {"images": (io.BytesIO(_frames(1, blur=True)[0]), "blurry.jpg", "image/jpeg")}

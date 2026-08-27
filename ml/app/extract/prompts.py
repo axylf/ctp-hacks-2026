@@ -83,6 +83,9 @@ def user_prompt_for_text(text: str) -> str:
 
 VISION_PROMPT = (
     "These images are photographed or scanned pages of one course syllabus, in "
-    "page order. Read them and extract the graded work. If a page is unreadable, "
-    "extract what you can from the others rather than guessing at its content."
+    "page order. Read them and extract every listed deliverable. Pay special "
+    "attention to Tentative Plan / Schedule tables: emit one task for every row "
+    "such as '1/2 ... Lab 1', preserving the printed week range in week_label. "
+    "If a page is unreadable, extract what you can from the others rather than "
+    "guessing at its content."
 )

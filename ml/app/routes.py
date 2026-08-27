@@ -131,6 +131,15 @@ def scan_syllabus():
         log.exception("scan failed")
         return _error(f"could not process those images: {exc}", 422)
 
+    if not result.tasks:
+        return _error(
+            "No deliverables could be read from this scan. Capture the tentative-plan "
+            "or grading page in bright, sharp light, then try again.",
+            422,
+            retake=True,
+            reason="no_tasks_found",
+        )
+
     repo().save_result(result)
     return jsonify(result.model_dump(mode="json"))
 
