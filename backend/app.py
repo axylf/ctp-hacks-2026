@@ -1,14 +1,38 @@
 import hashlib
+import logging
 import os
 import shutil
+import sys
 import time
 import uuid
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
 import cv2
 import numpy as np
 import pytesseract
 
+try:
+    from dotenv import load_dotenv
+except ImportError:  # pragma: no cover - fallback for lean Python envs
+    def load_dotenv(path: str | os.PathLike[str] | None = None, *args, **kwargs):
+        env_path = Path(path) if path is not None else Path(__file__).resolve().parents[1] / ".env"
+        if not env_path.exists():
+            return False
+        for raw_line in env_path.read_text(encoding="utf-8").splitlines():
+            line = raw_line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, value = line.split("=", 1)
+            os.environ.setdefault(key.strip(), value.strip().strip('"\''))
+        return True
+
 from supabase import create_client, Client
+
+load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 
 try:
     from env_config import get_supabase_url, get_supabase_key
@@ -53,9 +77,18 @@ def configure_tesseract_path() -> None:
 
 configure_tesseract_path()
 
+MAX_UPLOAD_BYTES = 20 * 1024 * 1024
+
 app = Flask(__name__)
-app.config["MAX_CONTENT_LENGTH"] = settings.max_upload_bytes
+app.config["MAX_CONTENT_LENGTH"] = MAX_UPLOAD_BYTES
 CORS(app, resources={r"/api/*": {"origins": "*"}})
+
+try:
+    from ml.app.routes import syllabus_bp
+    app.register_blueprint(syllabus_bp)
+except Exception:
+    logging.getLogger(__name__).exception("Unable to register ML syllabus blueprint")
+    syllabus_bp = None
 
 SUPABASE_URL = get_supabase_url()
 SUPABASE_KEY = get_supabase_key()
@@ -344,6 +377,98 @@ def autosave_ocr_result(
         return {"saved": True, "data": result}
     except Exception as exc:  # pragma: no cover - depends on Supabase connectivity
         return {"saved": False, "reason": "supabase_write_failed", "error": str(exc)}
+
+
+def load_supabase_dashboard(user_email: str | None) -> dict:
+    if not SUPABASE_URL or not SUPABASE_KEY:
+        return {"courses": [], "assignments": [], "documents": [], "recommendations": []}
+
+    email = (user_email or "alex@example.com").strip().lower()
+    client = get_supabase_client()
+    user_response = client.table("users").select("*").eq("email", email).limit(1).execute()
+    user_rows = user_response.data or []
+    if not user_rows:
+        return {"courses": [], "assignments": [], "documents": [], "recommendations": []}
+
+    user = user_rows[0]
+    course_response = client.table("courses").select("*").eq("user_id", user["id"]).order("created_at", desc=True).execute()
+    course_rows = course_response.data or []
+    upload_response = client.table("syllabus_uploads").select("*").eq("user_id", user["id"]).order("created_at", desc=True).execute()
+    upload_rows = upload_response.data or []
+    task_response = client.table("tasks").select("*").eq("user_id", user["id"]).order("due_date", desc=False).execute()
+    task_rows = task_response.data or []
+
+    course_map = {course["id"]: course for course in course_rows}
+    courses = [
+        {
+            "id": course["id"],
+            "code": course["code"],
+            "name": course["name"],
+            "institution": course.get("institution"),
+            "term": course.get("term"),
+            "instructor": course.get("instructor"),
+            "meeting_times": course.get("meeting_times"),
+        }
+        for course in course_rows
+    ]
+
+    documents = [
+        {
+            "id": upload["id"],
+            "name": upload.get("original_filename") or "syllabus-upload",
+            "source": upload.get("source") or "file",
+            "pageCount": upload.get("page_count") or 1,
+            "pages": [],
+            "mimeType": upload.get("mime_type") or "application/octet-stream",
+            "size": upload.get("byte_size") or 0,
+            "addedAt": upload.get("created_at") or upload.get("updated_at"),
+            "taskIds": [],
+        }
+        for upload in upload_rows
+    ]
+
+    assignments = []
+    for task in task_rows:
+        due_date = task.get("due_date")
+        course = course_map.get(task.get("course_id"), {})
+        course_code = course.get("code") or "COURSE"
+        week_label = None
+        if due_date:
+            try:
+                from datetime import date as _date
+                week_label = str(_date.fromisoformat(due_date).isocalendar().week)
+            except Exception:
+                week_label = None
+
+        assignments.append({
+            "id": task["id"],
+            "title": task.get("title") or "Untitled task",
+            "type": task.get("type") or "assignment",
+            "due_date": due_date,
+            "course_code": course_code,
+            "course_name": course.get("name") or "Untitled course",
+            "course_id": task.get("course_id"),
+            "priority": task.get("priority") or "medium",
+            "priority_reason": task.get("priority_reason") or "",
+            "needs_review": bool(task.get("needs_review")),
+            "source_quote": task.get("source_quote") or "",
+            "week_label": week_label,
+            "completed": bool(task.get("completed")),
+        })
+
+    return {
+        "courses": courses,
+        "assignments": assignments,
+        "documents": documents,
+        "recommendations": [],
+        "user": user,
+    }
+
+
+@app.get("/api/supabase/dashboard")
+def supabase_dashboard():
+    user_email = request.args.get("user_email") or os.getenv("VITE_DEMO_USER_EMAIL") or "alex@example.com"
+    return jsonify(load_supabase_dashboard(user_email))
 
 
 @app.post("/api/ocr")

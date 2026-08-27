@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Header from './components/Header';
 import WelcomeHero from './components/WelcomeHero';
 import UploadModal from './components/UploadModal';
@@ -6,7 +6,7 @@ import ScanSyllabusModal from './components/ScanSyllabusModal';
 import CalendarView from './components/CalendarView';
 import OverloadSidebar from './components/OverloadSidebar';
 import DocumentShelf from './components/DocumentShelf';
-import { analyzeTasks, uploadSyllabus } from './api';
+import { analyzeTasks, loadPersistedData, uploadSyllabus } from './api';
 
 /**
  * Decrunch — local-only. Starts empty; only stores what you upload or scan.
@@ -29,6 +29,23 @@ export default function App() {
   const reuploadRef = useRef(null);
   const pendingRef = useRef(null);
   const pendingMetaRef = useRef(null);
+
+  useEffect(() => {
+    let active = true;
+    loadPersistedData().then((data) => {
+      if (!active) return;
+      if (data.courses.length || data.assignments.length || data.documents.length) {
+        setCourses(data.courses);
+        setAssignments(data.assignments);
+        setDocuments(data.documents);
+        setRecommendations(data.recommendations || []);
+      }
+    });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const addDocument = useCallback((file, meta, result) => {
     setDocuments((prev) => [
@@ -82,7 +99,7 @@ export default function App() {
   const handleProcessComplete = useCallback(async () => {
     const file = pendingRef.current;
     const meta = pendingMetaRef.current;
-    if (!file) return;
+    if (!file) return true;
 
     try {
       setApiError('');
@@ -106,8 +123,11 @@ export default function App() {
       addDocument(file, meta, result);
       pendingRef.current = null;
       pendingMetaRef.current = null;
+      return true;
     } catch (error) {
-      setApiError(error.message || 'Could not process that file.');
+      const message = error.message || 'Could not process that file.';
+      setApiError(message);
+      return false;
     } finally {
       setIsProcessing(false);
     }

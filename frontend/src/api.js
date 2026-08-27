@@ -1,4 +1,5 @@
 const API_BASE = (import.meta.env.VITE_API_URL || '/api').replace(/\/$/, '');
+const DEMO_USER_EMAIL = import.meta.env.VITE_DEMO_USER_EMAIL || 'alex@example.com';
 
 export class ApiError extends Error {
   constructor(message, status) {
@@ -21,6 +22,20 @@ async function request(path, options = {}) {
     throw new ApiError(body.error || 'The backend could not process that file.', response.status);
   }
   return body;
+}
+
+export async function loadPersistedData(userEmail = DEMO_USER_EMAIL) {
+  try {
+    const body = await request(`/supabase/dashboard?user_email=${encodeURIComponent(userEmail)}`);
+    return {
+      courses: body.courses || [],
+      assignments: body.assignments || [],
+      documents: body.documents || [],
+      recommendations: body.recommendations || [],
+    };
+  } catch {
+    return { courses: [], assignments: [], documents: [], recommendations: [] };
+  }
 }
 
 export async function uploadSyllabus(file, meta = {}) {

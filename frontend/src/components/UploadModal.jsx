@@ -42,9 +42,17 @@ export default function UploadModal({
 
     timers.push(
       setTimeout(async () => {
-        if (!finishedRef.current) {
-          finishedRef.current = true;
-          await onCompleteRef.current();
+        if (finishedRef.current) return;
+
+        finishedRef.current = true;
+        try {
+          const ok = await onCompleteRef.current();
+          if (ok === false) {
+            finishedRef.current = false;
+          }
+        } catch (error) {
+          console.error('Upload processing failed:', error);
+          finishedRef.current = false;
         }
       }, STEP_MS * active.length + 300)
     );
