@@ -1,11 +1,15 @@
 import react from '@vitejs/plugin-react'
 import { defineConfig, loadEnv } from 'vite'
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd(), '')
+  const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+  const env = loadEnv(mode, repoRoot, '')
   return {
     plugins: [react()],
+    envDir: repoRoot,
     server: {
       proxy: {
         '/api': {

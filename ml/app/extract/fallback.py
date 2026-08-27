@@ -53,6 +53,12 @@ _INSTITUTION_RE = re.compile(r"^.*\b(college|university|institute|school)\b.*$",
 
 # Lines that look like grading rows but aren't graded work.
 _NOT_A_TASK = re.compile(r"\bparticipation\b|\battendance\b|\bengagement\b", re.I)
+_PLAN_HEADING = re.compile(r"\b(?:tentative|tenatative)\s+plan\b", re.I)
+_PLAN_ROW = re.compile(
+    r"^\s*(\d{1,2}(?:\s*/\s*\d{1,2})*)\s+.+?\s+"
+    r"((?:lab|exam|quiz|project|paper|presentation|assignment)\s*\d*\b.*?)\s*$",
+    re.I,
+)
 
 
 def classify(label: str) -> TaskType:
@@ -167,9 +173,17 @@ def _dated_rows(text: str, page_breaks: list[int], seen: list[str]) -> list[RawT
     tasks: list[RawTask] = []
     seen_lower = {s.lower() for s in seen}
     offset = 0
+    in_plan = False
     for line in text.splitlines():
         index, offset = offset, offset + len(line) + 1
         stripped = line.strip()
+        if _PLAN_HEADING.search(stripped):
+            in_plan = True
+            continue
+        if in_plan and re.match(r"^\d+\.\s+(?:grading|grade|attendance|academic)\b", stripped, re.I):
+            in_plan = False
+        if in_plan:
+            continue
         if not stripped or "%" in stripped or len(stripped) > 150:
             continue
         date_match = DATE_RE.search(stripped)
@@ -196,6 +210,43 @@ def _dated_rows(text: str, page_breaks: list[int], seen: list[str]) -> list[RawT
     return tasks
 
 
+def _tentative_plan_rows(text: str, page_breaks: list[int]) -> list[RawTask]:
+    """Extract rows such as ``3/4/5 ... Lab 2`` from a tentative-plan table.
+
+    These are schedule weeks, not calendar dates. Keeping the week label avoids
+    inventing dates from an academic-calendar approximation.
+    """
+    tasks: list[RawTask] = []
+    in_plan = False
+    offset = 0
+    for line in text.splitlines():
+        index, offset = offset, offset + len(line) + 1
+        stripped = line.strip()
+        if _PLAN_HEADING.search(stripped):
+            in_plan = True
+            continue
+        if not in_plan:
+            continue
+        if re.match(r"^\d+\.\s+(?:grading|grade|attendance|academic)\b", stripped, re.I):
+            break
+        match = _PLAN_ROW.match(stripped)
+        if not match:
+            continue
+        week_label = re.sub(r"\s*/\s*", "/", match.group(1))
+        label = match.group(2).strip()
+        tasks.append(
+            RawTask(
+                title=_titleize(label),
+                type=classify(label),
+                week_label=week_label,
+                confidence=0.9,
+                source_page=_page_of(text, index, page_breaks),
+                source_quote=stripped[:120],
+            )
+        )
+    return tasks
+
+
 def extract(text: str, page_texts: list[str] | None = None) -> RawExtraction:
     """Regex/heuristic extraction over already-normalized syllabus text."""
     page_breaks: list[int] = []
@@ -207,8 +258,9 @@ def extract(text: str, page_texts: list[str] | None = None) -> RawExtraction:
 
     graded, non_task_weight = _graded_rows(text, page_breaks)
     dated = _dated_rows(text, page_breaks, [t.title for t in graded])
+    planned = _tentative_plan_rows(text, page_breaks)
     return RawExtraction(
         course=extract_course(text),
-        tasks=graded + dated,
+        tasks=graded + dated + planned,
         non_task_weight=non_task_weight,
     )

@@ -5,6 +5,7 @@ Overload-proof semester calendar frontend. React + Vite + Lucide icons, driven b
 ## Quick start
 
 ```bash
+cd frontend
 npm install
 npm run dev
 ```
@@ -13,8 +14,9 @@ Then open the URL Vite prints (usually `http://localhost:5173`).
 
 ## Run the backend + AI pipeline
 
-The frontend proxies `/api` requests to the Flask service at port 5000. In a
-second terminal, set up the Python environment and start it:
+The frontend proxies `/api` requests to the Flask service at the
+`VITE_BACKEND_URL` in `.env` (port 5001 in the local setup). In a second
+terminal, set up the Python environment and start it:
 
 ```bash
 uv sync --group dev
@@ -36,7 +38,7 @@ while the backend is running.
 ## Project structure
 
 ```
-src/
+frontend/src/
   App.jsx                 # State machine (welcome → processing → calendar)
   mockData.js             # Courses, 20 assignments, overload + AI recs
   index.css               # Design system
@@ -64,6 +66,6 @@ Replace imports from `mockData.js` with `fetch` / React Query once those routes 
 
 ## Scripts
 
-- `npm run dev` — local development  
-- `npm run build` — production build to `dist/`  
-- `npm run preview` — serve the production build  
+- `cd frontend && npm run dev` — local development
+- `cd frontend && npm run build` — production build to `frontend/dist/`
+- `cd frontend && npm run preview` — serve the production build

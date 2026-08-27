@@ -25,6 +25,9 @@ async function request(path, options = {}) {
 
 export async function uploadSyllabus(file, meta = {}) {
   const form = new FormData();
+  // Syllabi often specify only a week number. Do not let the backend invent a
+  // calendar date from a generic term calendar.
+  form.append('infer_dates', 'false');
 
   if (meta.source === 'scan') {
     const pages = meta.pages || [];

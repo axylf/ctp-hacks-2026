@@ -209,3 +209,22 @@ def test_fallback_and_gemini_agree_on_the_fixture(syllabus_bytes):
     assert TaskType.FINAL in types_found
     assert TaskType.MIDTERM in types_found
     assert TaskType.ASSIGNMENT in types_found
+
+
+def test_fallback_extracts_tentative_plan_week_ranges():
+    raw = fallback.extract("""
+8. Tenatative Plan
+Week Topic Task
+1/2 Orientation, Intro to Python Lab 1
+3/4/5 Supervised and Unsupervised Learning Lab 2
+6 Ensemble Lab 3
+7 Exam 1 Exam 1
+9. Grading Policy
+""")
+
+    assert [(task.week_label, task.title) for task in raw.tasks] == [
+        ("1/2", "Lab 1"),
+        ("3/4/5", "Lab 2"),
+        ("6", "Lab 3"),
+        ("7", "Exam 1"),
+    ]

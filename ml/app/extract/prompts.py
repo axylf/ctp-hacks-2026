@@ -20,6 +20,11 @@ DUE DATES — the rule that matters most:
   NEVER guess, estimate, or infer a date. An empty string is a correct,
   expected answer. Many syllabi list deliverables without any dates at all.
 
+TENTATIVE PLANS:
+  If a schedule table uses week numbers or ranges (for example "1/2 ... Lab 1"),
+  emit that task and set `week_label` to the printed value ("1/2"). This is not
+  a calendar date: leave `due_raw` empty unless the table also prints a date.
+
 GRADE WEIGHTS:
   Set `grade_pct` from the grading breakdown when one exists ("30% - final"
   -> grade_pct 30). Leave it null when the syllabus doesn't say.

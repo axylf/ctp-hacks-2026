@@ -65,6 +65,9 @@ class RawTask(BaseModel):
     # Free text exactly as printed: "Week 5", "3/10", "TBA", or empty.
     # NEVER a guess — see prompts.SYSTEM_PROMPT.
     due_raw: str = ""
+    # A syllabus plan may give a week (or range) instead of a calendar date,
+    # e.g. "1/2". Preserve that printed schedule label verbatim.
+    week_label: str = ""
     grade_pct: Optional[float] = None
     count: int = 1              # "~4 programming assignments" -> count=4
     confidence: float = 0.5
@@ -120,6 +123,7 @@ class Task(BaseModel):
     type: TaskType
     due_date: Optional[date] = None
     due_time: Optional[str] = None
+    week_label: str = ""
     date_source: DateSource = DateSource.UNKNOWN
     grade_pct: Optional[float] = None
     priority: Priority = Priority.MEDIUM

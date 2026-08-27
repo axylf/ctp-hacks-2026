@@ -128,7 +128,10 @@ def normalize(
         expanded = _expand(raw_task, course.code, index)
         for task in expanded:
             resolved = parse_due(raw_task.due_raw, term)
-            if resolved is not None:
+            if raw_task.week_label:
+                # A tentative plan specifies sequencing, not a calendar due date.
+                task.week_label = raw_task.week_label
+            elif resolved is not None:
                 task.due_date = resolved
                 task.date_source = DateSource.EXPLICIT
             elif raw_task.due_raw.strip():
@@ -281,11 +284,40 @@ def _extract_text(text: str, page_texts: list[str]) -> tuple[RawExtraction, Pipe
         try:
             result = extract_from_text(text)
             if result.extraction.tasks:
+                _add_tentative_plan_rows(result.extraction, text, page_texts)
                 return result.extraction, PipelinePath.NATIVE_TEXT, result.model
             log.warning("Gemini returned no tasks; falling back to the regex extractor")
         except (GeminiUnavailable, ValueError) as exc:
             log.warning("Gemini text extraction unavailable (%s); using fallback", exc)
     return fallback.extract(text, page_texts), PipelinePath.FALLBACK, "offline-regex"
+
+
+def _add_tentative_plan_rows(
+    extraction: RawExtraction, text: str, page_texts: list[str]
+) -> None:
+    """Fill omissions from machine-readable tentative-plan tables.
+
+    Gemini remains the primary extractor, but plan rows are structured enough
+    that dropping one is strictly worse than supplementing the response with
+    the deterministic reading. Existing Gemini tasks are enriched in place.
+    """
+    planned = [task for task in fallback.extract(text, page_texts).tasks if task.week_label]
+    for plan_task in planned:
+        match = next(
+            (
+                task for task in extraction.tasks
+                if task.type is plan_task.type and task.title.lower() == plan_task.title.lower()
+            ),
+            None,
+        )
+        if match is None:
+            extraction.tasks.append(plan_task)
+        elif not match.week_label:
+            match.week_label = plan_task.week_label
+            if not match.source_quote:
+                match.source_quote = plan_task.source_quote
+            if match.source_page is None:
+                match.source_page = plan_task.source_page
 
 
 def _extract_images(
