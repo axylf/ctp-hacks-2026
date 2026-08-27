@@ -153,7 +153,6 @@ export default function App() {
                 selectedCourse={selectedCourse}
                 onCourseChange={setSelectedCourse}
               />
-              {apiError && <p className="api-error" role="alert">{apiError}</p>}
             </div>
             <OverloadSidebar
               open={sidebarOpen}
@@ -163,6 +162,7 @@ export default function App() {
             />
           </div>
         )}
+        {apiError && <p className="api-error" role="alert">{apiError}</p>}
       </main>
 
       {scanOpen && (
