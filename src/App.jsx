@@ -9,7 +9,7 @@ import DocumentShelf from './components/DocumentShelf';
 import { analyzeTasks, uploadSyllabus } from './api';
 
 /**
- * SyllaSync — local-only. Starts empty; only stores what you upload or scan.
+ * Decrunch — local-only. Starts empty; only stores what you upload or scan.
  * No hardcoded courses, lectures, or deadlines.
  */
 export default function App() {

@@ -37,11 +37,10 @@ export default function WelcomeHero({ onFileSelected, onOpenScan }) {
 
       <div className="welcome-hero">
         <h1>
-          Welcome to <em>SyllaSync</em>! Add syllabi as you go.
+          Welcome to <em>Decrunch</em>! Add syllabi as you go.
         </h1>
         <p>
-          Nothing is pre-loaded. Upload a file or scan pages with your camera —
-          we only keep what you add.
+          No more headaches. No more crunching. Burnout goes bye-bye.
         </p>
       </div>
 

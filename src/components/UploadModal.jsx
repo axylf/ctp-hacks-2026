@@ -4,13 +4,13 @@ import { Check, FileText, Loader2 } from 'lucide-react';
 const STEP_MS = 700;
 
 const UPLOAD_STEPS = [
-  { id: 1, label: 'Reading syllabus and extracting deadlines…', team: 'AI pipeline' },
-  { id: 2, label: 'Checking workload conflicts and recommendations…', team: 'AI pipeline' },
+  { id: 1, label: 'Reading syllabus and extracting deadlines…', team: 'Decrunch AI' },
+  { id: 2, label: 'Checking workload conflicts and recommendations…', team: 'Decrunch AI' },
 ];
 
 const SCAN_STEPS = [
-  { id: 1, label: 'Reading captured pages and extracting deadlines…', team: 'AI pipeline' },
-  { id: 2, label: 'Checking workload conflicts and recommendations…', team: 'AI pipeline' },
+  { id: 1, label: 'Reading captured pages and extracting deadlines…', team: 'Decrunch AI' },
+  { id: 2, label: 'Checking workload conflicts and recommendations…', team: 'Decrunch AI' },
 ];
 
 /** Short local save overlay — no fake CV/Gemini lecture extraction. */
