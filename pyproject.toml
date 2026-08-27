@@ -1,0 +1,36 @@
+[project]
+name = "syllabus-intelligence-engine"
+version = "0.1.0"
+description = "ML/AI track: syllabus -> structured, prioritized, conflict-analyzed academic tasks"
+requires-python = ">=3.10"
+dependencies = [
+    "flask>=3.0",
+    "flask-cors>=4.0",
+    "pydantic>=2.6",
+    "pypdf>=4.2",
+    "pymupdf>=1.24",
+    "opencv-python-headless>=4.9",
+    "numpy>=1.26",
+    "pillow>=10.2",
+    "rapidfuzz>=3.6",
+    "python-dateutil>=2.9",
+    "python-dotenv>=1.0",
+    "google-genai>=1.0",
+    # Intel macOS has no wheel for cryptography>=47, which would force an OpenSSL
+    # source build. Scoped by marker so ARM/Linux teammates resolve normally.
+    "cryptography<47; platform_machine == 'x86_64' and sys_platform == 'darwin'",
+]
+
+[dependency-groups]
+dev = ["pytest>=8.0"]
+# Only needed for the DB seed/verify script; the pipeline itself is storage-agnostic.
+db = ["psycopg[binary]>=3.1"]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["ml/tests"]
+markers = ["slow: hits the network or is otherwise slow"]
+filterwarnings = ["ignore::DeprecationWarning"]

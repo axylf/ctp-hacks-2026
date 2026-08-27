@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Syllabus Engine — ML harness</title>
+<style>
+  :root { --bg:#101416; --card:#171c1f; --line:#2c3438; --ink:#e7ecee; --dim:#828e93;
+          --accent:#5fc2b6; --warn:#e0a163; --crit:#e08b84; }
+  * { box-sizing:border-box }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.5 ui-sans-serif,system-ui,sans-serif; padding:24px }
+  h1 { font-size:20px; margin:0 0 4px } h2 { font-size:13px; text-transform:uppercase; letter-spacing:.08em; color:var(--dim); margin:28px 0 10px }
+  .sub { color:var(--dim); font-size:13px; margin:0 0 20px }
+  .wrap { max-width:1000px; margin:0 auto }
+  .buttons { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:14px }
+  button { font:inherit; font-weight:600; padding:12px 18px; border-radius:6px; border:1px solid var(--line);
+           background:var(--card); color:var(--ink); cursor:pointer }
+  button.primary { background:var(--accent); border-color:var(--accent); color:#06201d }
+  button:disabled { opacity:.5; cursor:not-allowed }
+  .opts { display:flex; gap:10px; flex-wrap:wrap; align-items:center; color:var(--dim); font-size:13px; margin-bottom:14px }
+  input[type=date] { font:inherit; background:var(--card); color:var(--ink); border:1px solid var(--line); border-radius:5px; padding:6px 8px }
+  #status { padding:10px 14px; border:1px solid var(--line); border-radius:6px; background:var(--card); font-size:13px; margin-bottom:16px }
+  #status.err { border-color:var(--crit); color:var(--crit) }
+  video, canvas.shot { width:100%; max-width:420px; border-radius:8px; border:1px solid var(--line); background:#000 }
+  .shots { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px }
+  .shots canvas { width:110px; height:auto }
+  table { border-collapse:collapse; width:100%; font-size:14px }
+  th { text-align:left; font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--dim);
+       padding:8px 10px; border-bottom:1px solid var(--line) }
+  td { padding:8px 10px; border-bottom:1px solid #21282c; vertical-align:top }
+  .pill { font-size:11px; padding:2px 8px; border-radius:10px; border:1px solid currentColor; white-space:nowrap }
+  .critical { color:var(--crit) } .high { color:var(--warn) } .medium { color:var(--accent) } .low { color:var(--dim) }
+  .heavy { color:var(--warn) } .moderate { color:var(--accent) }
+  .inferred { color:var(--warn); border-bottom:1px dashed var(--warn) }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:14px 16px; margin-bottom:10px }
+  .card.crit { border-left:3px solid var(--crit) } .card.heav { border-left:3px solid var(--warn) }
+  pre { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:14px; overflow:auto; font-size:12px; max-height:340px }
+  details summary { cursor:pointer; color:var(--dim); font-size:13px }
+  .hide { display:none }
+  ul.sub { margin:8px 0 0 18px; padding:0; color:var(--dim); font-size:13px }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Syllabus Intelligence Engine</h1>
+  <p class="sub">ML harness — deliberately plain. Proves the extraction pipeline works end to end.</p>
+
+  <div class="buttons">
+    <button id="btnUpload" class="primary">📄 Upload Syllabus PDF</button>
+    <button id="btnCamera">📷 Scan with Camera</button>
+    <button id="btnSample">Load sample output</button>
+  </div>
+  <div class="opts">
+    <label>Term start <input type="date" id="termStart" value="2026-01-26"></label>
+    <label>Term end <input type="date" id="termEnd" value="2026-05-20"></label>
+    <label><input type="checkbox" id="inferDates" checked> infer missing dates</label>
+  </div>
+
+  <input type="file" id="fileInput" accept="application/pdf" class="hide">
+  <!-- capture="environment" opens the rear camera directly on phones -->
+  <input type="file" id="cameraInput" accept="image/*" capture="environment" multiple class="hide">
+
+  <div id="status">Ready. <span id="engine"></span></div>
+
+  <div id="cameraPanel" class="hide">
+    <video id="preview" autoplay playsinline muted></video>
+    <div class="buttons" style="margin-top:10px">
+      <button id="btnShoot" class="primary">Capture page</button>
+      <button id="btnDone">Done — extract</button>
+      <button id="btnCancel">Cancel</button>
+    </div>
+    <div class="shots" id="shots"></div>
+  </div>
+
+  <div id="results" class="hide">
+    <h2 id="courseLine"></h2>
+    <div id="warnings"></div>
+    <h2>Tasks</h2>
+    <table><thead><tr>
+      <th>Done</th><th>Task</th><th>Type</th><th>Due</th><th>Weight</th><th>Priority</th><th>Why</th>
+    </tr></thead><tbody id="taskRows"></tbody></table>
+    <h2>High-workload periods</h2>
+    <div id="windows"></div>
+    <h2>Recommendations</h2>
+    <div id="recs"></div>
+    <details><summary>Raw JSON</summary><pre id="raw"></pre></details>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const statusEl = $("status");
+let shots = [], stream = null;
+
+function setStatus(msg, isError) {
+  statusEl.textContent = msg;
+  statusEl.className = isError ? "err" : "";
+}
+
+function formData(extra) {
+  const fd = new FormData();
+  fd.append("term_start", $("termStart").value);
+  fd.append("term_end", $("termEnd").value);
+  fd.append("infer_dates", $("inferDates").checked ? "true" : "false");
+  return fd;
+}
+
+async function post(url, fd) {
+  setStatus("Processing…");
+  const res = await fetch(url, { method: "POST", body: fd });
+  const data = await res.json().catch(() => ({ error: "server returned non-JSON" }));
+  if (!res.ok) {
+    setStatus((data.error || "request failed") + (data.retake ? " — retake the photo." : ""), true);
+    return null;
+  }
+  return data;
+}
+
+// --- button 1: file upload -------------------------------------------------
+$("btnUpload").onclick = () => $("fileInput").click();
+$("fileInput").onchange = async e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const fd = formData();
+  fd.append("file", file);
+  const data = await post("/api/syllabus/upload", fd);
+  if (data) render(data);
+  e.target.value = "";
+};
+
+// --- button 2: camera ------------------------------------------------------
+$("btnCamera").onclick = async () => {
+  // Desktop gets a live preview; phones fall back to the native camera app,
+  // which is a better experience than a <video> element anyway.
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    $("cameraInput").click();
+    return;
+  }
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: "environment", width: { ideal: 1920 } }
+    });
+  } catch (err) {
+    setStatus("Camera unavailable (" + err.name + ") — opening the file picker instead.");
+    $("cameraInput").click();
+    return;
+  }
+  $("preview").srcObject = stream;
+  $("cameraPanel").classList.remove("hide");
+  shots = []; $("shots").innerHTML = "";
+  setStatus("Camera on. Capture one frame per syllabus page, then press Done.");
+};
+
+$("cameraInput").onchange = async e => {
+  const files = [...e.target.files];
+  if (!files.length) return;
+  const fd = formData();
+  files.forEach(f => fd.append("images", f));
+  const data = await post("/api/syllabus/scan", fd);
+  if (data) render(data);
+  e.target.value = "";
+};
+
+$("btnShoot").onclick = () => {
+  const video = $("preview");
+  const canvas = document.createElement("canvas");
+  canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+  canvas.getContext("2d").drawImage(video, 0, 0);
+  canvas.toBlob(blob => {
+    shots.push(blob);
+    setStatus(shots.length + " page(s) captured.");
+  }, "image/jpeg", 0.92);
+  const thumb = canvas.cloneNode(true);
+  thumb.getContext("2d").drawImage(canvas, 0, 0);
+  $("shots").appendChild(thumb);
+};
+
+function stopCamera() {
+  if (stream) stream.getTracks().forEach(t => t.stop());
+  stream = null;
+  $("cameraPanel").classList.add("hide");
+}
+$("btnCancel").onclick = () => { stopCamera(); setStatus("Cancelled."); };
+$("btnDone").onclick = async () => {
+  if (!shots.length) { setStatus("Capture at least one page first.", true); return; }
+  stopCamera();
+  const fd = formData();
+  shots.forEach((b, i) => fd.append("images", b, `page${i + 1}.jpg`));
+  const data = await post("/api/syllabus/scan", fd);
+  if (data) render(data);
+};
+
+$("btnSample").onclick = async () => {
+  const res = await fetch("/api/demo/sample");
+  const data = await res.json();
+  if (res.ok) render(data); else setStatus(data.error, true);
+};
+
+// --- rendering -------------------------------------------------------------
+function render(data) {
+  $("results").classList.remove("hide");
+  const c = data.course, m = data.meta;
+  $("courseLine").textContent =
+    `${c.code} — ${c.name} · ${c.term || "term unknown"} · ${c.instructor || "instructor unknown"}` +
+    ` · via ${m.pipeline_path} (${m.model}) in ${m.processing_ms}ms`;
+  setStatus(`Extracted ${data.tasks.length} task(s) from ${m.pages} page(s).`);
+
+  $("warnings").innerHTML = (m.warnings || [])
+    .map(w => `<div class="card" style="font-size:13px;color:var(--dim)">⚠︎ ${esc(w)}</div>`).join("");
+
+  $("taskRows").innerHTML = data.tasks.map(t => `
+    <tr>
+      <td><input type="checkbox" data-id="${esc(t.id)}" ${t.completed ? "checked" : ""}></td>
+      <td>${esc(t.title)}${t.needs_review ? ' <span class="pill high">review</span>' : ""}</td>
+      <td>${esc(t.type)}</td>
+      <td class="${t.date_source === "inferred" ? "inferred" : ""}">${t.due_date || "—"}</td>
+      <td>${t.grade_pct != null ? t.grade_pct + "%" : "—"}</td>
+      <td><span class="pill ${esc(t.priority)}">${esc(t.priority)}</span></td>
+      <td style="color:var(--dim);font-size:12px">${esc(t.priority_reason)}</td>
+    </tr>`).join("");
+
+  $("taskRows").querySelectorAll("input[type=checkbox]").forEach(box => {
+    box.onchange = () => fetch("/api/tasks/" + encodeURIComponent(box.dataset.id), {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ completed: box.checked })
+    });
+  });
+
+  const wins = data.workload_analysis.windows || [];
+  $("windows").innerHTML = wins.length ? wins.map(w => `
+    <div class="card ${w.severity === "critical" ? "crit" : w.severity === "heavy" ? "heav" : ""}">
+      <b class="${esc(w.severity)}">${esc(w.severity.toUpperCase())}</b>
+      · ${w.start} → ${w.end} · load ${w.load_score} · <span style="color:var(--dim)">${esc(w.kind)}</span>
+      <div style="color:var(--dim);font-size:13px">${esc(w.label)}</div>
+    </div>`).join("") : `<div class="card" style="color:var(--dim)">No crunch periods detected.</div>`;
+
+  $("recs").innerHTML = (data.recommendations || []).length
+    ? data.recommendations.map(r => `
+      <div class="card">
+        <span class="pill medium">${esc(r.type)}</span>
+        <div style="margin-top:6px">${esc(r.message)}</div>
+        ${(r.suggested_subtasks || []).length
+          ? "<ul class='sub'>" + r.suggested_subtasks
+              .map(s => `<li>T−${s.days_before}d · ${esc(s.title)}${s.due_date ? " (" + s.due_date + ")" : ""}</li>`)
+              .join("") + "</ul>"
+          : ""}
+      </div>`).join("")
+    : `<div class="card" style="color:var(--dim)">Nothing urgent to flag.</div>`;
+
+  $("raw").textContent = JSON.stringify(data, null, 2);
+}
+
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g,
+  ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+
+fetch("/api/health").then(r => r.json()).then(h => {
+  $("engine").textContent = h.gemini_configured
+    ? `Gemini enabled (${h.model}).`
+    : "No API key — running the offline regex extractor. Add GEMINI_API_KEY to .env for Gemini.";
+});
+</script>
+</body>
+</html>

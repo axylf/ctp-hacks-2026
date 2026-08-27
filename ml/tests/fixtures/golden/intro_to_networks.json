@@ -1,0 +1,189 @@
+{
+  "course": {
+    "code": "CMP 405/743",
+    "name": "Intro to Networks",
+    "institution": "Lehman College, CUNY",
+    "term": "Spring 2026",
+    "instructor": "Matthew P. Johnson",
+    "meeting_times": null,
+    "confidence": 1.0
+  },
+  "tasks": [
+    {
+      "id": "cmp-405-743-final-2",
+      "course_code": "CMP 405/743",
+      "title": "Final",
+      "type": "final",
+      "due_date": "2026-05-20",
+      "due_time": null,
+      "date_source": "inferred",
+      "grade_pct": 30.0,
+      "priority": "high",
+      "priority_score": 0.731,
+      "priority_reason": "30% of final grade; exam-type; due 2026-05-20; lands in a high-workload week",
+      "estimated_hours": 10,
+      "completed": false,
+      "needs_review": true,
+      "confidence": 0.55,
+      "source_page": 2,
+      "source_quote": "30% - final",
+      "subtasks": []
+    },
+    {
+      "id": "cmp-405-743-midterm-1",
+      "course_code": "CMP 405/743",
+      "title": "Midterm",
+      "type": "midterm",
+      "due_date": "2026-03-24",
+      "due_time": null,
+      "date_source": "inferred",
+      "grade_pct": 20.0,
+      "priority": "high",
+      "priority_score": 0.625,
+      "priority_reason": "20% of final grade; exam-type; due 2026-03-24",
+      "estimated_hours": 8,
+      "completed": false,
+      "needs_review": true,
+      "confidence": 0.55,
+      "source_page": 2,
+      "source_quote": "20% - midterm",
+      "subtasks": []
+    },
+    {
+      "id": "cmp-405-743-programming-assignment-1-01",
+      "course_code": "CMP 405/743",
+      "title": "Programming Assignment 1",
+      "type": "assignment",
+      "due_date": "2026-02-23",
+      "due_time": null,
+      "date_source": "inferred",
+      "grade_pct": 10.0,
+      "priority": "medium",
+      "priority_score": 0.387,
+      "priority_reason": "10% of final grade; due in 22 days",
+      "estimated_hours": 5,
+      "completed": false,
+      "needs_review": true,
+      "confidence": 0.55,
+      "source_page": 2,
+      "source_quote": "40% - ~4 programming assignments:",
+      "subtasks": []
+    },
+    {
+      "id": "cmp-405-743-programming-assignment-2-02",
+      "course_code": "CMP 405/743",
+      "title": "Programming Assignment 2",
+      "type": "assignment",
+      "due_date": "2026-03-20",
+      "due_time": null,
+      "date_source": "inferred",
+      "grade_pct": 10.0,
+      "priority": "low",
+      "priority_score": 0.334,
+      "priority_reason": "10% of final grade; due 2026-03-20",
+      "estimated_hours": 5,
+      "completed": false,
+      "needs_review": true,
+      "confidence": 0.55,
+      "source_page": 2,
+      "source_quote": "40% - ~4 programming assignments:",
+      "subtasks": []
+    },
+    {
+      "id": "cmp-405-743-programming-assignment-3-03",
+      "course_code": "CMP 405/743",
+      "title": "Programming Assignment 3",
+      "type": "assignment",
+      "due_date": "2026-04-14",
+      "due_time": null,
+      "date_source": "inferred",
+      "grade_pct": 10.0,
+      "priority": "low",
+      "priority_score": 0.334,
+      "priority_reason": "10% of final grade; due 2026-04-14",
+      "estimated_hours": 5,
+      "completed": false,
+      "needs_review": true,
+      "confidence": 0.55,
+      "source_page": 2,
+      "source_quote": "40% - ~4 programming assignments:",
+      "subtasks": []
+    },
+    {
+      "id": "cmp-405-743-programming-assignment-4-04",
+      "course_code": "CMP 405/743",
+      "title": "Programming Assignment 4",
+      "type": "assignment",
+      "due_date": "2026-05-09",
+      "due_time": null,
+      "date_source": "inferred",
+      "grade_pct": 10.0,
+      "priority": "low",
+      "priority_score": 0.334,
+      "priority_reason": "10% of final grade; due 2026-05-09",
+      "estimated_hours": 5,
+      "completed": false,
+      "needs_review": true,
+      "confidence": 0.55,
+      "source_page": 2,
+      "source_quote": "40% - ~4 programming assignments:",
+      "subtasks": []
+    }
+  ],
+  "workload_analysis": {
+    "windows": [
+      {
+        "start": "2026-03-18",
+        "end": "2026-03-24",
+        "load_score": 9.3,
+        "severity": "heavy",
+        "task_ids": [
+          "cmp-405-743-programming-assignment-2-02",
+          "cmp-405-743-midterm-1"
+        ],
+        "label": "2 deadlines in 7 days",
+        "kind": "rolling_7d"
+      }
+    ]
+  },
+  "recommendations": [
+    {
+      "type": "start_early",
+      "target_task_id": "cmp-405-743-midterm-1",
+      "message": "2 deadlines in 7 days (Mar 18\u2013Mar 24). Midterm is the heaviest of them at 20% of your grade. Start it about 10 days early and work in pieces.",
+      "window": "2026-03-18..2026-03-24",
+      "suggested_subtasks": [
+        {
+          "title": "Read the spec and list what's required",
+          "days_before": 14,
+          "due_date": "2026-03-10",
+          "completed": false
+        },
+        {
+          "title": "Do a first pass",
+          "days_before": 8,
+          "due_date": "2026-03-16",
+          "completed": false
+        },
+        {
+          "title": "Finish and review",
+          "days_before": 3,
+          "due_date": "2026-03-21",
+          "completed": false
+        }
+      ]
+    }
+  ],
+  "meta": {
+    "pipeline_path": "fallback",
+    "model": "offline-regex",
+    "warnings": [
+      "routing: 1989 chars/page >= 300",
+      "no explicit due dates for 6 task(s); dates inferred from the term calendar and flagged for review"
+    ],
+    "processing_ms": 0,
+    "pages": 3,
+    "non_task_weight": 10.0,
+    "grade_weight_total": 100.0
+  }
+}
