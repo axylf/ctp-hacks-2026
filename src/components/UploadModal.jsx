@@ -4,13 +4,13 @@ import { Check, FileText, Loader2 } from 'lucide-react';
 const STEP_MS = 700;
 
 const UPLOAD_STEPS = [
-  { id: 1, label: 'Saving your file to this session…', team: 'SyllaSync' },
-  { id: 2, label: 'Done. Document added — nothing else invented.', team: 'SyllaSync' },
+  { id: 1, label: 'Saving your file to this session…', team: 'Decrunch' },
+  { id: 2, label: 'Done. Document added — nothing else invented.', team: 'Decrunch' },
 ];
 
 const SCAN_STEPS = [
-  { id: 1, label: 'Saving captured pages to this session…', team: 'SyllaSync' },
-  { id: 2, label: 'Done. Pages stored as-is — no invented lecture data.', team: 'SyllaSync' },
+  { id: 1, label: 'Saving captured pages to this session…', team: 'Decrunch' },
+  { id: 2, label: 'Done. Pages stored as-is — no invented lecture data.', team: 'Decrunch' },
 ];
 
 /** Short local save overlay — no fake CV/Gemini lecture extraction. */

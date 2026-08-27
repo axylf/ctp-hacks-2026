@@ -8,7 +8,7 @@ import OverloadSidebar from './components/OverloadSidebar';
 import DocumentShelf from './components/DocumentShelf';
 
 /**
- * SyllaSync — local-only. Starts empty; only stores what you upload or scan.
+ * Decrunch — local-only. Starts empty; only stores what you upload or scan.
  * No hardcoded courses, lectures, or deadlines.
  */
 export default function App() {
