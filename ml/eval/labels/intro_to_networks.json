@@ -1,0 +1,17 @@
+{
+  "fixture": "syllabi/intro_to_networks_spring2026.pdf",
+  "notes": "Hand-labeled from the PDF. This syllabus states every graded component and its weight but contains NO dates anywhere, so every expected due_raw is empty. An extractor that invents dates here should score WORSE, not better.",
+  "course": {
+    "code": "CMP 405/743",
+    "name": "Intro to Networks",
+    "institution": "Lehman College, CUNY",
+    "term": "Spring 2026",
+    "instructor": "Matthew P. Johnson"
+  },
+  "non_task_weight": 10.0,
+  "tasks": [
+    {"title": "Programming Assignments", "type": "assignment", "grade_pct": 40.0, "count": 4, "due_raw": ""},
+    {"title": "Midterm", "type": "midterm", "grade_pct": 20.0, "count": 1, "due_raw": ""},
+    {"title": "Final", "type": "final", "grade_pct": 30.0, "count": 1, "due_raw": ""}
+  ]
+}
