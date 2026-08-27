@@ -19,20 +19,7 @@
   margin-bottom: 20px;
 }
 
-.ocr-form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-bottom: 20px;
-}
-
-.ocr-form input {
-  padding: 10px;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-}
-
-.ocr-form button {
+.primary-button {
   width: fit-content;
   padding: 10px 18px;
   border: none;
@@ -41,11 +28,18 @@
   color: white;
   font-weight: 600;
   cursor: pointer;
+  margin-bottom: 16px;
 }
 
-.ocr-form button:disabled {
+.primary-button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.status-text {
+  margin: 0 0 12px;
+  font-weight: 600;
+  color: #1f2937;
 }
 
 .result-box {

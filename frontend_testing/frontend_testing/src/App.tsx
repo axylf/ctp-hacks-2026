@@ -1,45 +1,53 @@
 import { useState } from 'react'
 import './App.css'
 
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+
 function App() {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [result, setResult] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [result, setResult] = useState('')
+  const [status, setStatus] = useState('')
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-
-    if (!selectedFile) {
-      setError('Please choose an image first.')
-      return
-    }
-
-    const formData = new FormData()
-    formData.append('image', selectedFile)
-
+  const handleSupabaseTest = async () => {
     setLoading(true)
     setError('')
     setResult('')
+    setStatus('Testing Supabase connection...')
 
     try {
-      const response = await fetch('http://localhost:5000/api/extract-text', {
-        method: 'POST',
-        body: formData,
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'OCR request failed')
+      if (!supabaseUrl || !supabaseKey) {
+        throw new Error('Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY in the frontend .env file.')
       }
 
-      setResult(data.text || 'No text found in image.')
-      console.log('OCR response:', data)
+      const response = await fetch(`${supabaseUrl}/rest/v1/supabase_test`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+        },
+        body: JSON.stringify({
+          message: `Frontend test @ ${new Date().toISOString()}`,
+          created_at: new Date().toISOString(),
+        }),
+      })
+
+      const text = await response.text()
+      const data = text ? JSON.parse(text) : null
+
+      if (!response.ok) {
+        throw new Error(data?.message || `Supabase request failed (${response.status})`)
+      }
+
+      setStatus('Supabase write succeeded.')
+      setResult(JSON.stringify(data, null, 2))
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Something went wrong'
       setError(message)
-      console.error('OCR error:', err)
+      setStatus('Supabase connection failed.')
+      console.error(err)
     } finally {
       setLoading(false)
     }
@@ -48,25 +56,18 @@ function App() {
   return (
     <main className="ocr-page">
       <div className="ocr-card">
-        <h1>OCR Image Test</h1>
+        <h1>Supabase Test</h1>
 
-        <form onSubmit={handleSubmit} className="ocr-form">
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(event) => setSelectedFile(event.target.files?.[0] ?? null)}
-          />
+        <button type="button" onClick={handleSupabaseTest} disabled={loading} className="primary-button">
+          {loading ? 'Testing...' : 'Run Supabase Test'}
+        </button>
 
-          <button type="submit" disabled={loading || !selectedFile}>
-            {loading ? 'Processing...' : 'Extract Text'}
-          </button>
-        </form>
-
+        {status && <p className="status-text">{status}</p>}
         {error && <p className="error-message">{error}</p>}
 
         <div className="result-box">
-          <h2>Output</h2>
-          <pre>{result || 'No OCR text yet.'}</pre>
+          <h2>Response</h2>
+          <pre>{result || 'No response yet.'}</pre>
         </div>
       </div>
     </main>
