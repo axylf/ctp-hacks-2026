@@ -1,3 +1,11 @@
+.env
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.uv/
+eval/reports/
+
 # Logs
 logs
 *.log

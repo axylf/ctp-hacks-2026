@@ -54,6 +54,7 @@ def configure_tesseract_path() -> None:
 configure_tesseract_path()
 
 app = Flask(__name__)
+app.config["MAX_CONTENT_LENGTH"] = settings.max_upload_bytes
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 SUPABASE_URL = get_supabase_url()
@@ -131,6 +132,9 @@ def index():
             {"method": "GET", "path": "/api/health"},
             {"method": "POST", "path": "/api/ocr"},
             {"method": "POST", "path": "/api/extract-text"},
+            {"method": "POST", "path": "/api/syllabus/upload"},
+            {"method": "POST", "path": "/api/syllabus/scan"},
+            {"method": "POST", "path": "/api/analyze"},
         ],
     })
 

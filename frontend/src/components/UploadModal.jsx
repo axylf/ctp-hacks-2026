@@ -4,13 +4,13 @@ import { Check, FileText, Loader2 } from 'lucide-react';
 const STEP_MS = 700;
 
 const UPLOAD_STEPS = [
-  { id: 1, label: 'Saving your file to this session…', team: 'SyllaSync' },
-  { id: 2, label: 'Done. Document added — nothing else invented.', team: 'SyllaSync' },
+  { id: 1, label: 'Reading syllabus and extracting deadlines…', team: 'Decrunch AI' },
+  { id: 2, label: 'Checking workload conflicts and recommendations…', team: 'Decrunch AI' },
 ];
 
 const SCAN_STEPS = [
-  { id: 1, label: 'Saving captured pages to this session…', team: 'SyllaSync' },
-  { id: 2, label: 'Done. Pages stored as-is — no invented lecture data.', team: 'SyllaSync' },
+  { id: 1, label: 'Reading captured pages and extracting deadlines…', team: 'Decrunch AI' },
+  { id: 2, label: 'Checking workload conflicts and recommendations…', team: 'Decrunch AI' },
 ];
 
 /** Short local save overlay — no fake CV/Gemini lecture extraction. */
@@ -41,10 +41,10 @@ export default function UploadModal({
     });
 
     timers.push(
-      setTimeout(() => {
+      setTimeout(async () => {
         if (!finishedRef.current) {
           finishedRef.current = true;
-          onCompleteRef.current();
+          await onCompleteRef.current();
         }
       }, STEP_MS * active.length + 300)
     );

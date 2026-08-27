@@ -1,14 +1,23 @@
-/* SyllaSync Design System — soft indigo, slate gray, crimson alerts */
+/* Decrunch Design System — warm yellow, slate, and amber accents */
 
 :root {
-  --indigo-50: #eef2ff;
-  --indigo-100: #e0e7ff;
-  --indigo-200: #c7d2fe;
-  --indigo-400: #818cf8;
-  --indigo-500: #6366f1;
-  --indigo-600: #4f46e5;
-  --indigo-700: #4338ca;
-  --indigo-800: #3730a3;
+  --amber-50: #fff8db;
+  --amber-100: #fff1b8;
+  --amber-200: #f9e38b;
+  --amber-400: #f5b700;
+  --amber-500: #f2a900;
+  --amber-600: #d99a00;
+  --amber-700: #b77b00;
+  --amber-800: #895d00;
+
+  --indigo-50: var(--amber-50);
+  --indigo-100: var(--amber-100);
+  --indigo-200: var(--amber-200);
+  --indigo-400: var(--amber-400);
+  --indigo-500: var(--amber-500);
+  --indigo-600: var(--amber-600);
+  --indigo-700: var(--amber-700);
+  --indigo-800: var(--amber-800);
 
   --slate-50: #f8fafc;
   --slate-100: #f1f5f9;
@@ -37,8 +46,8 @@
   --success-500: #10b981;
   --success-600: #059669;
 
-  --bg: #f4f6fb;
-  --surface: #ffffff;
+  --bg: #fffaf0;
+  --surface: #fffdf8;
   --text: var(--slate-800);
   --text-muted: var(--slate-500);
   --border: var(--slate-200);
@@ -134,7 +143,6 @@ img {
   justify-content: space-between;
   padding: 0 1.25rem;
   background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
 }
 
@@ -152,7 +160,7 @@ img {
   display: grid;
   place-items: center;
   color: white;
-  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.35);
+  box-shadow: 0 4px 12px rgba(217, 154, 0, 0.35);
 }
 
 .header-title {
@@ -305,17 +313,17 @@ img {
 }
 
 .scan-card {
-  border-color: #a5b4fc;
-  background: linear-gradient(165deg, #eef2ff 0%, #fff 55%);
+  border-color: #f7d36d;
+  background: linear-gradient(165deg, #fff7de 0%, #fff 55%);
 }
 
 .scan-card:hover {
   border-color: var(--indigo-600);
-  background: linear-gradient(165deg, #e0e7ff 0%, #fff 55%);
+  background: linear-gradient(165deg, #fff0b3 0%, #fff 55%);
 }
 
 .scan-card-icon {
-  background: linear-gradient(145deg, #c7d2fe, #eef2ff) !important;
+  background: linear-gradient(145deg, #f9e38b, #fff8db) !important;
 }
 
 .scan-browse {
@@ -379,7 +387,7 @@ img {
   color: white;
   font-weight: 600;
   font-size: 0.9rem;
-  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.3);
+  box-shadow: 0 4px 14px rgba(217, 154, 0, 0.3);
   transition: background var(--transition);
 }
 
@@ -483,7 +491,7 @@ img {
   position: absolute;
   width: 28px;
   height: 28px;
-  border: 3px solid #a5b4fc;
+  border: 3px solid #f7d36d;
 }
 
 .scan-corner.tl {
@@ -519,8 +527,8 @@ img {
   left: 0;
   right: 0;
   height: 2px;
-  background: linear-gradient(90deg, transparent, #818cf8, transparent);
-  box-shadow: 0 0 12px #6366f1;
+  background: linear-gradient(90deg, transparent, #f5b700, transparent);
+  box-shadow: 0 0 12px #d99a00;
   animation: scanLaser 2.2s ease-in-out infinite;
 }
 
@@ -653,7 +661,7 @@ img {
 .scan-capture-btn {
   background: var(--indigo-600);
   color: white;
-  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.3);
+  box-shadow: 0 4px 14px rgba(217, 154, 0, 0.3);
 }
 
 .scan-capture-btn:hover:not(:disabled) {
@@ -811,7 +819,6 @@ img {
   inset: 0;
   z-index: 200;
   background: rgba(15, 23, 42, 0.55);
-  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1489,6 +1496,16 @@ img {
   border-radius: var(--radius-lg);
   background: var(--surface);
   color: var(--slate-500);
+}
+
+.api-error {
+  margin: 1rem 0;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--crimson-100);
+  border-radius: var(--radius);
+  background: var(--crimson-50);
+  color: var(--crimson-700);
+  font-size: 0.9rem;
 }
 
 .empty-calendar {

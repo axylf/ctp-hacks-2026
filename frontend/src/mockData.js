@@ -1,5 +1,5 @@
 /**
- * SyllaSync helpers only.
+ * Decrunch helpers only.
  * No seed courses, lectures, or assignments — the app starts empty.
  */
 
