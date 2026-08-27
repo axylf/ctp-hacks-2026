@@ -1,4 +1,4 @@
-# SyllaSync
+# Decrunch
 
 Overload-proof semester calendar frontend. React + Vite + Lucide icons, driven by realistic mock data so Backend, Gemini AI, and Computer Vision teammates can wire APIs later.
 

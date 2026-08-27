@@ -12,9 +12,7 @@ export default function Header({
         <div className="header-logo" aria-hidden>
           <CalendarDays size={20} strokeWidth={2.25} />
         </div>
-        <div className="header-title">
-          Sylla<span>Sync</span>
-        </div>
+        <div className="header-title">Decrunch</div>
       </div>
 
       <div className="header-actions">
