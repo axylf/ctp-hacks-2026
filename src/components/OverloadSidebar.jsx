@@ -1,4 +1,4 @@
-import { AlertTriangle, Inbox, X } from 'lucide-react';
+import { AlertTriangle, Inbox, Sparkles, X } from 'lucide-react';
 
 /**
  * Workload sidebar — empty until real overload data exists.
@@ -47,7 +47,39 @@ export default function OverloadSidebar({
               deadlines exist — nothing is hardcoded.
             </p>
           </div>
-        ) : null}
+        ) : (
+          <>
+            {assignments.length > 0 && (
+              <div className="risk-card medium">
+                <span className="risk-badge medium">Extracted schedule</span>
+                <p className="risk-warning">
+                  {assignments.length} deadline{assignments.length === 1 ? '' : 's'} are being checked for workload conflicts.
+                </p>
+              </div>
+            )}
+            {recommendations.length > 0 && (
+              <h3 className="rec-section-title"><Sparkles size={14} /> AI recommendations</h3>
+            )}
+            {recommendations.map((recommendation, index) => (
+              <article className="rec-card" key={`${recommendation.target_task_id}-${index}`}>
+                <h3>{recommendation.type.replaceAll('_', ' ')}</h3>
+                <p className="rec-summary">{recommendation.message}</p>
+                {recommendation.suggested_subtasks?.length > 0 && (
+                  <ul className="rec-steps">
+                    {recommendation.suggested_subtasks.map((step, stepIndex) => (
+                      <li className="rec-step" key={`${step.title}-${stepIndex}`}>
+                        <span className="rec-step-content">
+                          <span className="rec-step-label">{step.title}</span>
+                          {step.due_date && <span className="rec-step-date">Target: {step.due_date}</span>}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </article>
+            ))}
+          </>
+        )}
       </aside>
     </>
   );

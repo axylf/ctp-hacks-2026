@@ -1,11 +1,22 @@
 import os
 import shutil
+import sys
+from pathlib import Path
 
 import cv2
 import numpy as np
 import pytesseract
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+
+# Running ``python backend/app.py`` puts only ``backend/`` on Python's import
+# path. Add the repository root so this service can host the ML blueprint.
+ROOT_DIR = Path(__file__).resolve().parents[1]
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
+
+from ml.app.config import settings
+from ml.app.routes import syllabus_bp
 
 
 def configure_tesseract_path() -> None:
@@ -29,7 +40,9 @@ def configure_tesseract_path() -> None:
 configure_tesseract_path()
 
 app = Flask(__name__)
+app.config["MAX_CONTENT_LENGTH"] = settings.max_upload_bytes
 CORS(app, resources={r"/api/*": {"origins": "*"}})
+app.register_blueprint(syllabus_bp)
 
 
 def preprocess_image(image_bytes: bytes):
@@ -71,6 +84,9 @@ def index():
             {"method": "GET", "path": "/api/health"},
             {"method": "POST", "path": "/api/ocr"},
             {"method": "POST", "path": "/api/extract-text"},
+            {"method": "POST", "path": "/api/syllabus/upload"},
+            {"method": "POST", "path": "/api/syllabus/scan"},
+            {"method": "POST", "path": "/api/analyze"},
         ],
     })
 

@@ -1491,6 +1491,16 @@ img {
   color: var(--slate-500);
 }
 
+.api-error {
+  margin: 1rem 0;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--crimson-100);
+  border-radius: var(--radius);
+  background: var(--crimson-50);
+  color: var(--crimson-700);
+  font-size: 0.9rem;
+}
+
 .empty-calendar {
   margin-top: 0.5rem;
 }

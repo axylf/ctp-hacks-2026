@@ -11,6 +11,21 @@ npm run dev
 
 Then open the URL Vite prints (usually `http://localhost:5173`).
 
+## Run the backend + AI pipeline
+
+The frontend proxies `/api` requests to the Flask service at port 5000. In a
+second terminal, set up the Python environment and start it:
+
+```bash
+uv sync --group dev
+uv run python backend/app.py
+```
+
+Create `.env` from `.env.example` and add your `GEMINI_API_KEY` to enable
+Gemini extraction. `DATABASE_URL` is ready for the database/seed workflow;
+the current task repository is in memory, so uploads remain available only
+while the backend is running.
+
 ## User flow
 
 1. **Welcome** — drag/drop or browse a PDF / JPEG / PNG syllabus  
