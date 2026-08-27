@@ -12,7 +12,7 @@ tentative plans, and organizes them by the week printed in the syllabus.
 | AI and extraction | Google Gemini (`google-genai`), Pydantic, pypdf, PyMuPDF, OpenCV, Pillow, Tesseract / pytesseract |
 | Processing | RapidFuzz, python-dateutil, NumPy |
 | Database | PostgreSQL, psycopg 3, `psql` migrations |
-| Development | uv, npm, pytest, Oxlint |
+| Development | Cursor, uv, npm, pytest, Oxlint |
 
 ## Quick start
 
