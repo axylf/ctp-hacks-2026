@@ -7,6 +7,11 @@ import pytesseract
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
+try:
+    import fitz
+except ModuleNotFoundError:  # pragma: no cover - compatibility fallback
+    import pymupdf as fitz
+
 
 def configure_tesseract_path() -> None:
     """Ensure pytesseract can locate the Tesseract binary on Windows."""
@@ -62,6 +67,38 @@ def extract_text_from_image(image_bytes: bytes) -> str:
     return text.strip()
 
 
+def extract_text_from_pdf(pdf_bytes: bytes) -> str:
+    """Render each PDF page to an image and OCR the text on each page."""
+    try:
+        document = fitz.open(stream=pdf_bytes, filetype="pdf")
+    except Exception as exc:
+        raise ValueError("Unable to read PDF file.") from exc
+
+    page_texts = []
+
+    try:
+        for page_number in range(document.page_count):
+            page = document.load_page(page_number)
+            pix = page.get_pixmap(matrix=fitz.Matrix(2, 2))
+            image_array = np.frombuffer(pix.samples, dtype=np.uint8).reshape(pix.h, pix.w, pix.n)
+
+            if pix.n == 4:
+                image_array = cv2.cvtColor(image_array, cv2.COLOR_BGRA2BGR)
+
+            _, buffer = cv2.imencode(".png", image_array)
+            page_text = extract_text_from_image(buffer.tobytes())
+            if page_text:
+                page_texts.append(page_text)
+    finally:
+        document.close()
+
+    combined = "\n\n".join(page_texts).strip()
+    if not combined:
+        raise ValueError("No text found in PDF.")
+
+    return combined
+
+
 @app.get("/")
 def index():
     return jsonify({
@@ -86,21 +123,35 @@ def extract_text():
     file = request.files.get("image") or request.files.get("file")
 
     if file is None or file.filename == "":
-        return jsonify({"error": "No image uploaded."}), 400
+        return jsonify({"error": "No file uploaded."}), 400
 
-    if not file.mimetype or not file.mimetype.startswith("image/"):
-        return jsonify({"error": "Uploaded file must be an image."}), 400
+    file_bytes = file.read()
+    mimetype = file.mimetype or ""
 
-    image_bytes = file.read()
+    if mimetype == "application/pdf":
+        try:
+            text = extract_text_from_pdf(file_bytes)
+        except ValueError as exc:
+            return jsonify({"error": str(exc)}), 400
+
+        return jsonify({
+            "filename": file.filename,
+            "text": text,
+            "type": "pdf",
+        })
+
+    if not mimetype.startswith("image/"):
+        return jsonify({"error": "Uploaded file must be an image or PDF."}), 400
 
     try:
-        text = extract_text_from_image(image_bytes)
+        text = extract_text_from_image(file_bytes)
     except ValueError as exc:
         return jsonify({"error": str(exc)}), 400
 
     return jsonify({
         "filename": file.filename,
         "text": text,
+        "type": "image",
     })
 
 
